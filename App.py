@@ -63,7 +63,7 @@ class NatalChart:
         self.year_gan = year_gan
 
     def _calculate_chart(self, year_gan, lunar_month, lunar_day, hour):
-        # 内部逻辑与您的脚本完全相同
+        # 核心算法与之前完全相同
         hour_zhi_idx = (hour + 1) // 2 % 12 if hour != 23 else 0
         ming_gong_idx = (lunar_month - 1 - hour_zhi_idx + 12) % 12
         self.palace_pos_idx["命宫"] = ming_gong_idx
@@ -74,14 +74,10 @@ class NatalChart:
         wu_xing_ju = ju_map[ming_gong_ganzhi]
         shang, yushu = divmod(lunar_day, wu_xing_ju)
         if yushu == 0: shang -=1; yushu = wu_xing_ju
-        temp_list = [2,1,4,3,6,5]
-        temp = temp_list[wu_xing_ju-1]
-        ziwei_idx = (ming_gong_idx + shang * (1 if ming_gong_idx in [0,1,6,7] else -1) + (yushu - 1) * (1 if ming_gong_idx in [2,3,4,5,8,9,10,11] else -1) + 12) %12
         ziwei_idx_map = { 2: [2, 1, 4, 3, 6, 5], 3: [1, 5, 2, 6, 3, 4], 4: [3, 2, 6, 5, 1, 4], 5: [4, 3, 1, 6, 2, 5], 6: [5, 4, 3, 2, 1, 6] }
         ziwei_idx = ziwei_idx_map[wu_xing_ju][(lunar_day + wu_xing_ju-1) // wu_xing_ju -1] if ming_gong_idx in [0,6] else \
                 ziwei_idx_map[wu_xing_ju][(lunar_day + wu_xing_ju-1) // wu_xing_ju ]-1 if ming_gong_idx in [1,7] else \
                 (ming_gong_idx + ( (lunar_day-1)//wu_xing_ju) * (1 if ming_gong_idx in [2,3,4,5] else -1) + 12)%12
-
         for star, offset in ZIWEI_GROUP.items(): self.star_pos_idx[star] = (ziwei_idx + offset + 12) % 12
         tianfu_idx = (5 - ziwei_idx + 12) % 12
         for star, offset in TIANFU_GROUP.items(): self.star_pos_idx[star] = (tianfu_idx + offset) % 12
@@ -122,65 +118,55 @@ class NatalChart:
 # =================== Streamlit 用户界面与交互区 ===================
 # ===================================================================
 
-st.set_page_config(page_title="紫微斗数-日运分析", page_icon="🔮", layout="centered")
+st.set_page_config(page_title="紫微探玄・流日天机", page_icon="📜", layout="centered")
 
 # --- 页面标题 ---
-st.title("🔮 紫微斗数-日运分析")
-st.caption("v6.2 - Streamlit Web App (终极可靠版)")
+st.title("📜 紫微探玄・流日天机")
+st.caption("v8.0 - 您的私人星盘运势顾问")
 
 # --- 侧边栏用于输入生日信息 ---
 with st.sidebar:
-    st.header("👤 您的出生信息")
-    st.info("请提供您的公历出生信息。所有信息仅用于本次计算，不会被储存或上传。")
+    st.header("定盘・安星之本")
+    st.info("“星盘一定，吉凶祸福，各有其位。” 请输入您的公历生辰，此乃定您本命盘、安布周天星曜之唯一基石。信息仅在本地运算，绝不外传，敬请安心。")
     
-    # 使用统一的日期选择器，更方便
     birth_date = st.date_input(
-        "出生年月日 (公历)",
+        "公历出生日期",
         value=datetime.date(1990, 10, 25),
-        min_value=datetime.date(1924, 1, 1), # 甲子年开始
-        max_value=datetime.date.today()
+        min_value=datetime.date(1924, 1, 1),
+        max_value=datetime.date.today(),
+        help="请选择您公历的年、月、日。"
     )
     
-    birth_hour = st.slider("出生时辰 (24小时制)", 0, 23, 8, help="0点代表子时，23点代表亥时末。")
+    birth_hour = st.slider("出生时辰 (24小时制)", 0, 23, 8, help="请滑动选择您的出生小时。例如，下午2点（14时）出生，请选择14。")
 
 # --- 主页面用于选择分析日期 ---
-st.header("📅 您要分析的日期")
-target_date = st.date_input("选择一个公历日期进行分析", datetime.date(2025, 10, 8))
+st.header("应期・洞察之日")
+target_date = st.date_input("欲观何日之运程，请在此择定", datetime.date(2025, 10, 8))
 
 # --- 分析按钮 ---
-if st.button("🚀 开始分析", type="primary", use_container_width=True):
-    with st.spinner('正在排盘和演算中，请稍候...'):
+if st.button("✨ 启动推演，洞见天机", type="primary", use_container_width=True):
+    with st.spinner('引星入宫，四化飞转，正在为您推演命运轨迹...'):
         try:
-            # 从日期选择器中获取年月日
-            birth_year = birth_date.year
-            birth_month = birth_date.month
-            birth_day = birth_date.day
-            
-            # 1. 初始化命盘
+            birth_year, birth_month, birth_day = birth_date.year, birth_date.month, birth_date.day
             my_chart = NatalChart(birth_year, birth_month, birth_day, birth_hour)
-            
-            # 2. 计算目标日干支
             target_date_ganzhi = get_ganzhi_of_date(target_date)
-            
-            # 3. 分析日运
             daily_luck = my_chart.analyze_day(target_date_ganzhi[0])
 
-            # --- 结果展示 ---
-            st.success("分析完成！")
-            st.subheader(f"📊 {target_date.strftime('%Y-%m-%d')} 的日运分析报告")
-
-            # 显示综合评级
+            st.success("推演完成！当日的星盘脉络与运势波动已清晰呈现。")
+            st.subheader(f"📖 {target_date.strftime('%Y年%m月%d日')}・天机所示")
+            
+            st.write("综览此日，星曜交辉，您的整体气运凝聚于此：")
             st.metric(
-                label=f"综合评级: {daily_luck['interpretation']}",
+                label="本日运势圭臬",
                 value=daily_luck['interpretation_details'],
-                delta=f"分数: {daily_luck['score']}",
+                delta=f"运势指数: {daily_luck['score']} ({daily_luck['interpretation']})",
                 delta_color="normal"
             )
             
             st.markdown("---")
 
-            # 当日四化状态
-            with st.expander("【点击查看当日四化状态】", expanded=True):
+            with st.expander("【流日四化・动静之机】", expanded=True):
+                st.markdown("“四化”为星曜能量的动态展现，是判断吉凶祸福的关键。禄为财源，权为掌控，科为名声，忌为波折。")
                 cols = st.columns(4)
                 hua_map = {"禄": "green", "权": "blue", "科": "orange", "忌": "red"}
                 for i, (hua, star_info) in enumerate(daily_luck['transformations'].items()):
@@ -190,22 +176,20 @@ if st.button("🚀 开始分析", type="primary", use_container_width=True):
             
             st.markdown("---")
 
-            # 推演过程与建议
-            st.subheader("【推演过程与建议】")
-            st.info(daily_luck['analysis_log'])
+            st.subheader("【吉凶详析・行事指南】")
+            analysis_intro = "以下是结合您本命盘与当日流日星曜的详细解读。请细品其中之意，以为今日行事之参考："
+            st.info(f"{analysis_intro}\n{daily_luck['analysis_log']}")
 
-            # 显示输入的生日信息以供核对
-            with st.expander("【点击查看您的输入信息】"):
+            with st.expander("【本命基石・信息复核】"):
+                st.write("为确保演算无误，请复核您的生辰信息是否准确，此乃一切推演之源头。")
                 birth_info_display = ZhDate(birth_year, birth_month, birth_day)
-                lunar_year_str = birth_info_display.lunar_year
-                lunar_month_str = format_lunar_month(birth_info_display.lunar_month)
-                lunar_day_str = format_lunar_day(birth_info_display.lunar_day)
-
-                st.write(f"**您输入的公历生日:** {birth_year}年{birth_month}月{birth_day}日 {birth_hour}时")
-                st.write(f"**当年干支:** {get_ganzhi_of_year(birth_year)}")
-                st.write(f"**分析日期干支:** {target_date_ganzhi}")
+                lunar_year_str, lunar_month_str, lunar_day_str = birth_info_display.lunar_year, format_lunar_month(birth_info_display.lunar_month), format_lunar_day(birth_info_display.lunar_day)
+                st.write(f"**您的公历生辰:** {birth_year}年{birth_month}月{birth_day}日 {birth_hour}时")
+                st.write(f"**对应农历:** {lunar_year_str}年 {lunar_month_str}{lunar_day_str}")
+                st.write(f"**生年干支:** {get_ganzhi_of_year(birth_year)}")
+                st.write(f"**所择日期干支:** {target_date_ganzhi}")
 
         except Exception as e:
-            st.error(f"发生错误：{e}")
-            st.warning("演算失败，请仔细检查您在左侧栏输入的生日信息是否准确无误。")
+            st.error("天机有晦，星盘未明", icon="😥")
+            st.warning("本次推演未能功成。或因网络波动，或因生辰信息有误。请仔细核对您输入的公历生辰，特别是日期与时辰，稍后再度尝试。")
 
