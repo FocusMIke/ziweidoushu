@@ -185,11 +185,11 @@ if st.button("✨ 推演财运，把握先机", type="primary", use_container_wi
                 birth_info_display = ZhDate(birth_year, birth_month, birth_day)
                 lunar_year_str, lunar_month_str, lunar_day_str = birth_info_display.lunar_year, format_lunar_month(birth_info_display.lunar_month), format_lunar_day(birth_info_display.lunar_day)
                 st.write(f"**您的公历生辰:** {birth_year}年{birth_month}月{birth_day}日 {birth_hour}时")
-                st.write(f"**对应农历:** {lunar_year_str}年 {lunar_month_str}{lunar_day_str}")
                 st.write(f"**生年干支:** {get_ganzhi_of_year(birth_year)}")
                 st.write(f"**所择日期干支:** {target_date_ganzhi}")
 
         except Exception as e:
             st.error("财星有晦，盘面未明", icon="😥")
             st.warning("本次推演未能功成。或因网络波动，或因生辰信息有误。请仔细核对您输入的公历生辰，特别是日期与时辰，稍后再度尝试。")
+
 
