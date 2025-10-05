@@ -110,24 +110,24 @@ class NatalChart:
             if ji_pos_idx == self.palace_pos_idx.get("财帛宫"): score -= 1; analysis_log.append(f"  • [凶-1] 流日化忌 ({ji_star}忌) 坐入本命财帛宫 (在{self._get_branch_name(ji_pos_idx)}宫)，主今日为财奔波烦恼，易有财务压力。")
             if ji_pos_idx == self.palace_pos_idx.get("福德宫"): score -= 1; analysis_log.append(f"  • [凶-1] 流日化忌 ({ji_star}忌) 坐入本命福德宫 (在{self._get_branch_name(ji_pos_idx)}宫)，主今日思绪混乱，内心不宁，易钻牛角尖。")
         final_score = max(-2, min(2, score))
-        if not analysis_log: analysis_log.append("  • 今日无重大吉凶星象引动关键宫位，运势平稳。")
-        interpretations = {2:"大吉",1:"吉",0:"平",-1:"凶",-2:"大凶"}; interpretation_details = {2:"机会极佳，果断出击",1:"运势顺利，可积极作为",0:"无明显吉凶，宜静观其变",-1:"诸事不宜，谨慎防守",-2:"风险极高，规避为上"}
+        if not analysis_log: analysis_log.append("  • 今日财运平稳，无明显起伏，宜静观其变，稳健理财。")
+        interpretations = {2:"大吉",1:"吉",0:"平",-1:"凶",-2:"大凶"}; interpretation_details = {2:"财机绝佳，果断出击",1:"财运顺遂，可积极作为",0:"财运平稳，宜静观其变",-1:"财运不济，宜谨慎防守",-2:"破财风险，规避为上"}
         return {"transformations":{"禄":f"{lu_star} ({self._get_branch_name(lu_pos_idx)})","权":f"{quan_star} ({self._get_branch_name(quan_pos_idx)})","科":f"{ke_star} ({self._get_branch_name(ke_pos_idx)})","忌":f"{ji_star} ({self._get_branch_name(ji_pos_idx)})"}, "score":final_score, "interpretation":interpretations.get(final_score), "interpretation_details":interpretation_details.get(final_score), "analysis_log":"\n".join(analysis_log)}
 
 # ===================================================================
 # =================== Streamlit 用户界面与交互区 ===================
 # ===================================================================
 
-st.set_page_config(page_title="紫微探玄・流日天机", page_icon="📜", layout="centered")
+st.set_page_config(page_title="紫微财运・流日金鉴", page_icon="💰", layout="centered")
 
 # --- 页面标题 ---
-st.title("📜 紫微探玄・流日天机")
-st.caption("v8.0 - 您的私人星盘运势顾问")
+st.title("💰 紫微财运・流日金鉴")
+st.caption("v9.0 - 您的专属每日偏财运指南")
 
 # --- 侧边栏用于输入生日信息 ---
 with st.sidebar:
-    st.header("定盘・安星之本")
-    st.info("“星盘一定，吉凶祸福，各有其位。” 请输入您的公历生辰，此乃定您本命盘、安布周天星曜之唯一基石。信息仅在本地运算，绝不外传，敬请安心。")
+    st.header("定盘・财之根源")
+    st.info("“财帛有位，禄马交驰，机运自来。” 请输入您的公历生辰，以定格您命中的财星根基。信息仅在本地运算，绝不外传，敬请安心。")
     
     birth_date = st.date_input(
         "公历出生日期",
@@ -140,33 +140,33 @@ with st.sidebar:
     birth_hour = st.slider("出生时辰 (24小时制)", 0, 23, 8, help="请滑动选择您的出生小时。例如，下午2点（14时）出生，请选择14。")
 
 # --- 主页面用于选择分析日期 ---
-st.header("应期・洞察之日")
-target_date = st.date_input("欲观何日之运程，请在此择定", datetime.date(2025, 10, 8))
+st.header("求财・洞察之日")
+target_date = st.date_input("欲观何日之财气，请在此择定", datetime.date(2025, 10, 8))
 
 # --- 分析按钮 ---
-if st.button("✨ 启动推演，洞见天机", type="primary", use_container_width=True):
-    with st.spinner('引星入宫，四化飞转，正在为您推演命运轨迹...'):
+if st.button("✨ 推演财运，把握先机", type="primary", use_container_width=True):
+    with st.spinner('引财星入宫，禄马飞驰，正在为您推演今日财运...'):
         try:
             birth_year, birth_month, birth_day = birth_date.year, birth_date.month, birth_date.day
             my_chart = NatalChart(birth_year, birth_month, birth_day, birth_hour)
             target_date_ganzhi = get_ganzhi_of_date(target_date)
             daily_luck = my_chart.analyze_day(target_date_ganzhi[0])
 
-            st.success("推演完成！当日的星盘脉络与运势波动已清晰呈现。")
-            st.subheader(f"📖 {target_date.strftime('%Y年%m月%d日')}・天机所示")
+            st.success("推演完成！今日的财运脉络与机遇波动已清晰呈现。")
+            st.subheader(f"📈 {target_date.strftime('%Y年%m月%d日')}・财运分析")
             
-            st.write("综览此日，星曜交辉，您的整体气运凝聚于此：")
+            st.write("综览此日，财星交辉，您的金钱气运凝聚于此：")
             st.metric(
-                label="本日运势圭臬",
+                label="本日财运总览",
                 value=daily_luck['interpretation_details'],
-                delta=f"运势指数: {daily_luck['score']} ({daily_luck['interpretation']})",
+                delta=f"财运指数: {daily_luck['score']} ({daily_luck['interpretation']})",
                 delta_color="normal"
             )
             
             st.markdown("---")
 
-            with st.expander("【流日四化・动静之机】", expanded=True):
-                st.markdown("“四化”为星曜能量的动态展现，是判断吉凶祸福的关键。禄为财源，权为掌控，科为名声，忌为波折。")
+            with st.expander("【流日四化・财运之机】", expanded=True):
+                st.markdown("“四化”是引动您今日财运的关键能量。禄为财源机遇，权为投资掌控，科为理财声誉，忌为财务波折。")
                 cols = st.columns(4)
                 hua_map = {"禄": "green", "权": "blue", "科": "orange", "忌": "red"}
                 for i, (hua, star_info) in enumerate(daily_luck['transformations'].items()):
@@ -176,12 +176,12 @@ if st.button("✨ 启动推演，洞见天机", type="primary", use_container_wi
             
             st.markdown("---")
 
-            st.subheader("【吉凶详析・行事指南】")
-            analysis_intro = "以下是结合您本命盘与当日流日星曜的详细解读。请细品其中之意，以为今日行事之参考："
+            st.subheader("【财运详析・投资指南】")
+            analysis_intro = "以下是结合您本命财帛、福德等宫位与今日流日星曜的详细解读。请细品其中之意，以为今日投资理财之参考："
             st.info(f"{analysis_intro}\n{daily_luck['analysis_log']}")
 
             with st.expander("【本命基石・信息复核】"):
-                st.write("为确保演算无误，请复核您的生辰信息是否准确，此乃一切推演之源头。")
+                st.write("为确保演算无误，请复核您的生辰信息，此乃一切财运推演之源头。")
                 birth_info_display = ZhDate(birth_year, birth_month, birth_day)
                 lunar_year_str, lunar_month_str, lunar_day_str = birth_info_display.lunar_year, format_lunar_month(birth_info_display.lunar_month), format_lunar_day(birth_info_display.lunar_day)
                 st.write(f"**您的公历生辰:** {birth_year}年{birth_month}月{birth_day}日 {birth_hour}时")
@@ -190,6 +190,6 @@ if st.button("✨ 启动推演，洞见天机", type="primary", use_container_wi
                 st.write(f"**所择日期干支:** {target_date_ganzhi}")
 
         except Exception as e:
-            st.error("天机有晦，星盘未明", icon="😥")
+            st.error("财星有晦，盘面未明", icon="😥")
             st.warning("本次推演未能功成。或因网络波动，或因生辰信息有误。请仔细核对您输入的公历生辰，特别是日期与时辰，稍后再度尝试。")
 
