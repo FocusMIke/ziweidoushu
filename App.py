@@ -202,10 +202,10 @@ if st.button("🚀 开始分析", type="primary", use_container_width=True):
                 lunar_day_str = format_lunar_day(birth_info_display.lunar_day)
 
                 st.write(f"**您输入的公历生日:** {birth_year}年{birth_month}月{birth_day}日 {birth_hour}时")
-                st.write(f"**转换为农历:** {lunar_year_str}年 {lunar_month_str}{lunar_day_str}")
                 st.write(f"**当年干支:** {get_ganzhi_of_year(birth_year)}")
                 st.write(f"**分析日期干支:** {target_date_ganzhi}")
 
         except Exception as e:
             st.error(f"发生错误：{e}")
             st.warning("演算失败，请仔细检查您在左侧栏输入的生日信息是否准确无误。")
+
